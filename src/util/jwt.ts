@@ -1,5 +1,6 @@
 import { sign, verify } from 'jsonwebtoken';
 import { app_config } from '../config';
+import { ObjectId } from 'mongoose';
 
 const verifyJwt = (token: string) => {
     try {
@@ -13,8 +14,8 @@ const verifyJwt = (token: string) => {
 }
 
 const signJwt = (userDetails: {
-    email: string
-    password: string,
+    id: ObjectId,
+    email: string,
     firstName: string,
     lastName: string,
     avaterLink?: string

@@ -51,12 +51,12 @@ const CourseSchema = new Schema({
     },
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     price: {
         type: Number,
-        default: 0,
-        requied: true
+        required: true
     },
     description: {
         type: String,

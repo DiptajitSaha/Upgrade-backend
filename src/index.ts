@@ -1,16 +1,16 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import express, { Request, Response } from "express";
+import express, { Request, Response, Express } from "express";
 import { app_config } from './config';
 import { course } from './routes/course.routes';
 import { users } from './routes/user.routes';
 import cors from 'cors';
 
+
 const app = express();
 const port = app_config.port;
 app.use(express.json());
 app.use(cors());
-
 app.get('/', (req: express.Request, res: express.Response) => {
   res.send('Express + TypeScript Server');
 });

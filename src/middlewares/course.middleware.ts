@@ -1,9 +1,7 @@
-/* 
+import { Request, Response, NextFunction} from "express";
+import { verifyJwt } from "../util/jwt";
 
-courses:
-    get: /course/browse
-    get: /course:id
-    put: /course:id -> publish
-    post: /course
+const getPublishesMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
+    
+}
 
-*/

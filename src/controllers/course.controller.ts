@@ -92,7 +92,27 @@ const getAllCourses = async () => {
     }
 }
 
-const getMyCourses = async (id: ObjectId) => {
+const getMyPublishes = async (id: ObjectId | string) => {
+    try{
+        const courses = await Course.find({
+            author: id
+        });
+        return {
+            status: 200,
+            data: {
+                courses
+            }
+        };
+    }
+    catch(e: any) {
+        return {
+            status: 501,
+            data: e.message
+        }
+    }
+}
+
+const getMyCourses = async (id: ObjectId | string) => {
     try{
         const courses = await Course.find({
             author: id
@@ -106,10 +126,39 @@ const getMyCourses = async (id: ObjectId) => {
     }
     catch(e: any) {
         return {
-            status: 501,
+            status: 401,
             data: e.message
         }
     }
 }
 
-export { getAllCourses, getMyCourses, createCourse, buyCourse, publishCourse};
+const getCourse = async (id: ObjectId | string) => {
+    try{
+        const course = await Course.findById(id);
+        if(!course) {
+            throw new Error('course not found');
+        }
+        return {
+            status: 200,
+            data: {
+                course
+            }
+        }
+    }
+    catch(e: any) {
+        return {
+            status: 402,
+            data: e.message
+        }
+    }
+}
+
+export { 
+    getAllCourses, 
+    getMyCourses, 
+    createCourse, 
+    buyCourse, 
+    publishCourse,
+    getCourse,
+    getMyPublishes
+};

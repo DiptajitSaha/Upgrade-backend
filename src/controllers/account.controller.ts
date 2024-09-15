@@ -80,4 +80,8 @@ const getUserInfo = async (id: ObjectId) => {
 }
 
 
-export { updateUserInfo, getUserInfo, createUser};
+export { 
+    updateUserInfo,
+    getUserInfo,
+    createUser
+};
