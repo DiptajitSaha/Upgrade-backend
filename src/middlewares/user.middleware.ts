@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyJwt } from "../util/jwt";
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 /* 
 user:
     get: /user:id
@@ -17,7 +17,7 @@ const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
         if(user == null) {
             throw new Error('unauthorized user');
         }
-        const id: ObjectId | string= user.id;
+        const id: Types.ObjectId | string= user.id;
         req.userId = id;
         next();
     }

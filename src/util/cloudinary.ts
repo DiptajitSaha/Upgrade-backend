@@ -19,7 +19,10 @@ const uploadToCloud = async (filePath: string | null) => {
             access_mode: 'public'
         });
         unlinkSync(filePath);
-        return res.public_id;
+        return {
+            public_id: res.public_id,
+            url: res.secure_url
+        }
     }
     catch(e: any) {
         console.log(e.message);

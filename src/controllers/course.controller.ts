@@ -1,10 +1,10 @@
 
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 import { Course, User } from "../db";
 
-const createCourse = async (id: ObjectId, courseDetails: {
+const createCourse = async (id: Types.ObjectId | string, courseDetails: {
     title: string,
-    author: ObjectId,
+    author: Types.ObjectId,
     price: number,
     description: string,
     thumbnailLink: string,
@@ -30,7 +30,7 @@ const createCourse = async (id: ObjectId, courseDetails: {
     }
 }
 
-const buyCourse = async (userId: ObjectId, courseId: ObjectId) => {
+const buyCourse = async (userId: Types.ObjectId | string, courseId: Types.ObjectId | string) => {
     try {
         const course = await Course.findById(courseId);
         if(!course) throw new Error('Invalid courseId');
@@ -52,11 +52,17 @@ const buyCourse = async (userId: ObjectId, courseId: ObjectId) => {
     }
 }
 
-const publishCourse = async (id: ObjectId) => {
+const publishCourse = async (CourseId: Types.ObjectId | string, userId: Types.ObjectId | string) => {
     try{
-        const course = await Course.findByIdAndUpdate(id, {
-            published: true
-        });
+        const course = await Course.findById(CourseId);
+        if(!course) {
+            throw new Error('invalid course id');
+        }
+        if(course.author.equals(userId)) {
+            throw new Error('unauthorized author');
+        }
+        course.published = true;
+        await course.save();
         return {
             status: 200,
             data: {
@@ -66,7 +72,7 @@ const publishCourse = async (id: ObjectId) => {
     }
     catch(e: any) {
         return {
-            status: 501,
+            status: 402,
             data: e.message
         }
     }
@@ -92,7 +98,7 @@ const getAllCourses = async () => {
     }
 }
 
-const getMyPublishes = async (id: ObjectId | string) => {
+const getMyPublishes = async (id: Types.ObjectId | string) => {
     try{
         const courses = await Course.find({
             author: id
@@ -112,7 +118,7 @@ const getMyPublishes = async (id: ObjectId | string) => {
     }
 }
 
-const getMyCourses = async (id: ObjectId | string) => {
+const getMyBoughtCourses = async (id: Types.ObjectId | string) => {
     try{
         const courses = await Course.find({
             author: id
@@ -132,7 +138,7 @@ const getMyCourses = async (id: ObjectId | string) => {
     }
 }
 
-const getCourse = async (id: ObjectId | string) => {
+const getCourse = async (id: Types.ObjectId | string) => {
     try{
         const course = await Course.findById(id);
         if(!course) {
@@ -155,7 +161,7 @@ const getCourse = async (id: ObjectId | string) => {
 
 export { 
     getAllCourses, 
-    getMyCourses, 
+    getMyBoughtCourses, 
     createCourse, 
     buyCourse, 
     publishCourse,

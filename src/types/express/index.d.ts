@@ -1,9 +1,9 @@
 import { Request } from 'express';
-import { ObjectId } from 'mongoose';
+import { Types } from 'mongoose';
 
 declare module 'express' {
   export interface Request {
-    userId?: ObjectId | string,
-    courseID?: ObjectId | string
+    userId?: Types.ObjectId | string,
+    courseID?: Types.ObjectId | string
   }
 }
