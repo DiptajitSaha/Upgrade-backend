@@ -1,6 +1,6 @@
 
 import { ObjectId } from "mongoose";
-import { Course } from "../db";
+import { Course, User } from "../db";
 
 const createCourse = async (id: ObjectId, courseDetails: {
     title: string,
@@ -21,6 +21,48 @@ const createCourse = async (id: ObjectId, courseDetails: {
                 course
             }
         }
+    }
+    catch(e: any) {
+        return {
+            status: 501,
+            data: e.message
+        }
+    }
+}
+
+const buyCourse = async (userId: ObjectId, courseId: ObjectId) => {
+    try {
+        const course = await Course.findById(courseId);
+        if(!course) throw new Error('Invalid courseId');
+        const user = await User.findById(userId);
+        if(!user) throw new Error('Invalid User');
+        user.myCourses.push(course._id);
+        return {
+            status: 200,
+            data: {
+                courses: user.myCourses
+            }
+        };
+    }
+    catch(e: any) {
+        return {
+            status: 501,
+            data: e.message
+        }
+    }
+}
+
+const publishCourse = async (id: ObjectId) => {
+    try{
+        const course = await Course.findByIdAndUpdate(id, {
+            published: true
+        });
+        return {
+            status: 200,
+            data: {
+                course
+            }
+        };
     }
     catch(e: any) {
         return {
@@ -70,4 +112,4 @@ const getMyCourses = async (id: ObjectId) => {
     }
 }
 
-export { getAllCourses, getMyCourses, createCourse};
+export { getAllCourses, getMyCourses, createCourse, buyCourse, publishCourse};

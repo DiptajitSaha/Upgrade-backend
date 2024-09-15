@@ -74,7 +74,6 @@ const CourseSchema = new Schema({
         type: [videoSchema],
         require: true
     }
-
 });
 
 export {UserSchema, CourseSchema};
