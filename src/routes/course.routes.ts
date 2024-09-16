@@ -65,6 +65,7 @@ course.put('/publishes/:id', verifyUser, async (req: Request, res: Response) => 
 // post new course
 course.post('/create', verifyUser, upload, uploadToCloudinary, async (req: Request, res: Response) => {
     const course = req.course;
+    //@ts-ignore
     course?.author = req.userId;
     console.log(course);
     
