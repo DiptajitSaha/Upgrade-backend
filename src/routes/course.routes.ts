@@ -4,11 +4,11 @@
 */
 
 import { Request, Response, Router } from "express";
-import { getAllCourses, getCourse, getMyBoughtCourses, getMyPublishes, publishCourse } from "../controllers/course.controller";
+import { createCourse, getAllCourses, getCourse, getMyBoughtCourses, getMyPublishes, publishCourse } from "../controllers/course.controller";
 import { verifyUser } from "../middlewares/user.middleware";
 import { upload } from "../middlewares/multer.middleware";
-import multer from "multer";
 import uploadToCloud from "../util/cloudinary";
+import { uploadToCloudinary } from "../middlewares/course.middleware";
 
 export const course = Router();
 // get featured
@@ -67,26 +67,23 @@ course.put('/publishes/:id', verifyUser, async (req: Request, res: Response) => 
         }).status(401);
         return;
     }
-    const course = publishCourse(courseId, req.userId);
-
+    const course = await publishCourse(courseId, req.userId);
+    res.json({
+        data: course.data
+    }).status(course.status);
 })
 
-course.post('/create', verifyUser, upload, async (req: Request, res: Response) => {
-
-    if (!req.files || !Array.isArray(req.files)) {
-        return res.status(400).json({ error: 'No files uploaded' });
+// post new course
+course.post('/create', verifyUser, upload, uploadToCloudinary, async (req: Request, res: Response) => {
+    const course = req.course;
+    if(!course) {
+        res.json({
+            err: 'upload failed',
+        }).status(500);
+        return;
     }
-    try {
-        const uploadResults = await Promise.all(
-            req.files.map(async (file) => {
-                const result = await uploadToCloud(file.path);
-                return result;
-            })
-        );
-
-        res.status(200).json({ message: 'Videos uploaded successfully!', files: uploadResults });
-    } catch (uploadError: any) {
-        res.status(500).json({ error: uploadError.message });
-    }
-
+    const uploadedCourse = await createCourse(course);
+    res.json({
+        data: uploadedCourse.data
+    }).status(uploadedCourse.status);
 })

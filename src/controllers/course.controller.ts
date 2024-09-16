@@ -2,7 +2,7 @@
 import { Types } from "mongoose";
 import { Course, User } from "../db";
 
-const createCourse = async (id: Types.ObjectId | string, courseDetails: {
+const createCourse = async (courseDetails: {
     title: string,
     author: Types.ObjectId,
     price: number,

@@ -26,7 +26,7 @@ const uploadToCloud = async (filePath: string | null) => {
     }
     catch(e: any) {
         console.log(e.message);
-        return new Error(e.message);
+        return null;
     }
 }
 
