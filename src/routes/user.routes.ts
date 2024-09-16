@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { createUser, getUserInfo, Login, updateUserInfo } from "../controllers/account.controller";
-import { signJwt } from "../util/jwt";
+import { signJwt, verifyJwt } from "../util/jwt";
 import { verifyUser } from "../middlewares/user.middleware";
 
 export const users = Router();
@@ -8,12 +8,12 @@ export const users = Router();
 users.post('/signup', async (req: Request, res: Response) => {
     try{
         const userDetails: {
-            email: string
+            email: string,
             password: string,
             firstName: string,
             lastName: string,
             avaterLink?: string
-        } = req.body;
+        } = req.body.userDetails;
         const user = await createUser(userDetails);
         if(user.status >= 400) {
             res.send(user.data).status(user.status);
@@ -40,6 +40,7 @@ users.get('/login', async (req: Request, res: Response) => {
             email: string
             password: string,
         } = req.body;
+
         const user = await Login(userDetails);
         if(user.status >= 400){
             res.send(user.data).status(user.status);
@@ -68,11 +69,10 @@ users.get('/', verifyUser, async (req: Request, res: Response) => {
             res.send(user.data).status(user.status);
             return;
         }
-        const token = signJwt(user.data);
         res.json({
             msg: 'user details retrived successfully',
-            data:{
-                token
+            data: {
+                user: user.data
             }
         }).status(200);
     }
@@ -91,7 +91,7 @@ users.put('/update', verifyUser, async (req: Request, res: Response) => {
             lastName?: string,
             newPassword?: string,
             avaterLink?: string
-        } = req.body
+        } = req.body.update;
         if(!req.userId) throw new Error('invalid credential');
 
         const user = await updateUserInfo(req.userId, update);

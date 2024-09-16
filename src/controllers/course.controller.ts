@@ -56,10 +56,11 @@ const buyCourse = async (userId: Types.ObjectId | string, courseId: Types.Object
 const publishCourse = async (CourseId: Types.ObjectId | string, userId: Types.ObjectId | string) => {
     try{
         const course = await Course.findById(CourseId);
+
         if(!course) {
             throw new Error('invalid course id');
         }
-        if(course.author.equals(userId)) {
+        if(course.author._id != userId) {
             throw new Error('unauthorized author');
         }
         course.published = true;
@@ -104,6 +105,7 @@ const getMyPublishes = async (id: Types.ObjectId | string) => {
         const courses = await Course.find({
             author: id
         });
+        console.log(courses);
         return {
             status: 200,
             data: {
@@ -114,26 +116,6 @@ const getMyPublishes = async (id: Types.ObjectId | string) => {
     catch(e: any) {
         return {
             status: 501,
-            data: e.message
-        }
-    }
-}
-
-const getMyBoughtCourses = async (id: Types.ObjectId | string) => {
-    try{
-        const courses = await Course.find({
-            author: id
-        });
-        return {
-            status: 200,
-            data: {
-                courses
-            }
-        }
-    }
-    catch(e: any) {
-        return {
-            status: 401,
             data: e.message
         }
     }
@@ -162,7 +144,6 @@ const getCourse = async (id: Types.ObjectId | string) => {
 
 export { 
     getAllCourses, 
-    getMyBoughtCourses, 
     createCourse, 
     buyCourse, 
     publishCourse,

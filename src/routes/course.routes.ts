@@ -1,9 +1,10 @@
 
 import { Request, Response, Router } from "express";
-import { createCourse, getAllCourses, getCourse, getMyBoughtCourses, getMyPublishes, publishCourse } from "../controllers/course.controller";
+import { createCourse, getAllCourses, getCourse, getMyPublishes, publishCourse } from "../controllers/course.controller";
 import { verifyUser } from "../middlewares/user.middleware";
 import { upload } from "../middlewares/multer.middleware";
 import { uploadToCloudinary } from "../middlewares/course.middleware";
+import { getMyBoughtCourses } from "../controllers/account.controller";
 
 export const course = Router();
 
@@ -30,17 +31,9 @@ course.get('/mycourses', verifyUser, async (req: Request, res: Response) => {
     }).status(courses.status);
 });
 
-// get one course
-course.get('/:id', async (req, res) => {
-    const courseId = req.params.id;
-    const course = await getCourse(courseId);
-    res.json({
-        data: course.data
-    }).status(course.status);
-});
-
 // get publishes
 course.get('/publishes', verifyUser, async (req: Request, res: Response) => {
+
     const userId = req.userId;
     if (!userId) {
         res.json({
@@ -72,6 +65,9 @@ course.put('/publishes/:id', verifyUser, async (req: Request, res: Response) => 
 // post new course
 course.post('/create', verifyUser, upload, uploadToCloudinary, async (req: Request, res: Response) => {
     const course = req.course;
+    course?.author = req.userId;
+    console.log(course);
+    
     if(!course) {
         res.json({
             err: 'upload failed',
@@ -83,3 +79,12 @@ course.post('/create', verifyUser, upload, uploadToCloudinary, async (req: Reque
         data: uploadedCourse.data
     }).status(uploadedCourse.status);
 })
+
+// get one course
+course.get('/:id', async (req, res) => {
+    const courseId = req.params.id;
+    const course = await getCourse(courseId);
+    res.json({
+        data: course.data
+    }).status(course.status);
+});

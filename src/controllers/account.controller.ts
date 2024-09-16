@@ -1,6 +1,6 @@
 
 import { Types } from "mongoose";
-import { User } from "../db";
+import { Course, User } from "../db";
 
 const createUser = async (userDetails: {
     email: string
@@ -11,6 +11,7 @@ const createUser = async (userDetails: {
 }) => {
     try {
         const user = await User.create(userDetails);
+
         return {
             status: 200,
             data: {
@@ -74,10 +75,7 @@ const Login = async (userDetails: {
     password: string
 }) => {
     try {
-        const user = await User.findOne({
-            email: userDetails.email,
-            password: userDetails.password
-        });
+        const user = await User.findOne(userDetails);
         if (!user) throw new Error('user not found');
         return {
             status: 200,
@@ -121,9 +119,29 @@ const getUserInfo = async (id: Types.ObjectId | string) => {
     }
 }
 
+const getMyBoughtCourses = async (userId: Types.ObjectId | string) => {
+    try{
+        const user = await User.findById(userId);
+        const courses = await Course.findById(user?.myCourses);
+        return {
+            status: 200,
+            data: {
+                courses
+            }
+        }
+    }
+    catch(e: any) {
+        return {
+            status: 401,
+            data: e.message
+        }
+    }
+}
+
 export {
     updateUserInfo,
     getUserInfo,
     createUser,
+    getMyBoughtCourses,
     Login
 };
