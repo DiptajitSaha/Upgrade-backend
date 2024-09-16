@@ -4,10 +4,11 @@ import { Course, User } from "../db";
 
 const createCourse = async (courseDetails: {
     title: string,
-    author: Types.ObjectId,
+    author: Types.ObjectId | string,
     price: number,
     description: string,
     thumbnailLink: string,
+    published?: boolean,
     videos: Array<{
         videoId: number,
         videoLink: string

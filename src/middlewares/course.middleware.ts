@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import uploadToCloud from "../util/cloudinary";
-import { upload } from "./multer.middleware";
-import multer from "multer";
+
 interface FileObject {
     [fieldname: string]: Express.Multer.File[]; // Index signature to handle dynamic field names
 }

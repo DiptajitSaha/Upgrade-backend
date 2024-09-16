@@ -7,27 +7,21 @@ const verifyJwt = (token: string) => {
         const user: any = verify(token, app_config.jwt_secret);
         return user.id;
     }
-    catch(e: any){
+    catch (e: any) {
         console.log(e.message);
         return null;
-    } 
+    }
 }
 
 const signJwt = (userDetails: {
-    id: ObjectId,
+    id: ObjectId | string,
     email: string,
     firstName: string,
     lastName: string,
     avaterLink?: string
 }) => {
-    try {
-        const token: string = sign(userDetails, app_config.jwt_secret);
-        return token;
-    }
-    catch(e: any){
-        console.log(e.message);
-        return null;
-    }
+    const token: string = sign(userDetails, app_config.jwt_secret);
+    return token;
 }
 
 export {

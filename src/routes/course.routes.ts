@@ -1,16 +1,12 @@
-/* courses:
-    post: /course
-    put: /course/buy:id
-*/
 
 import { Request, Response, Router } from "express";
 import { createCourse, getAllCourses, getCourse, getMyBoughtCourses, getMyPublishes, publishCourse } from "../controllers/course.controller";
 import { verifyUser } from "../middlewares/user.middleware";
 import { upload } from "../middlewares/multer.middleware";
-import uploadToCloud from "../util/cloudinary";
 import { uploadToCloudinary } from "../middlewares/course.middleware";
 
 export const course = Router();
+
 // get featured
 course.get('/browse', async (req, res) => {
     const courses = await getAllCourses();

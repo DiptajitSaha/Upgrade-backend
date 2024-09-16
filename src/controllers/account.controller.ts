@@ -1,5 +1,5 @@
 
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../db";
 
 const createUser = async (userDetails: {
@@ -9,7 +9,7 @@ const createUser = async (userDetails: {
     lastName: string,
     avaterLink?: string
 }) => {
-    try{
+    try {
         const user = await User.create(userDetails);
         return {
             status: 200,
@@ -22,7 +22,7 @@ const createUser = async (userDetails: {
             }
         }
     }
-    catch (e: any){
+    catch (e: any) {
         return {
             status: 401,
             data: e.message
@@ -30,18 +30,30 @@ const createUser = async (userDetails: {
     }
 }
 
-const updateUserInfo = async (id: ObjectId, update: {
+const updateUserInfo = async (id: Types.ObjectId | string, update: {
     firstName?: string,
     lastName?: string,
-    password?: string,
+    password: string,
+    newPassword?: string,
     avaterLink?: string
 }) => {
-    try{
-        const user = await User.findByIdAndUpdate(id, update);
-        if(!user) throw new Error('user not found');
+    try {
+        const user = await User.findById(id);
+        if (!user) throw new Error('user not found');
+        if(user.password != update.password) {
+            throw new Error('invalid password');
+        }
+        await user.updateOne({
+            firstName: update.firstName ? update.firstName : user.firstName,
+            lastName: update.lastName ? update.lastName : user.lastName,
+            password: update.newPassword ? update.newPassword : user.password,
+            avaterLink: update.avaterLink ? update.avaterLink : user.avaterLink,
+        });
+        await user.save();
         return {
             status: 200,
             data: {
+                id: user._id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -49,7 +61,7 @@ const updateUserInfo = async (id: ObjectId, update: {
             }
         }
     }
-    catch(e: any) {
+    catch (e: any) {
         return {
             status: 401,
             data: e.message
@@ -57,13 +69,43 @@ const updateUserInfo = async (id: ObjectId, update: {
     }
 }
 
-const getUserInfo = async (id: ObjectId) => {
-    try{
+const Login = async (userDetails: {
+    email: string,
+    password: string
+}) => {
+    try {
+        const user = await User.findOne({
+            email: userDetails.email,
+            password: userDetails.password
+        });
+        if (!user) throw new Error('user not found');
+        return {
+            status: 200,
+            data: {
+                id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                avaterLink: user.avaterLink
+            }
+        }
+    }
+    catch (e: any) {
+        return {
+            status: 401,
+            data: e.message
+        };
+    }
+}
+
+const getUserInfo = async (id: Types.ObjectId | string) => {
+    try {
         const user = await User.findById(id);
-        if(!user) throw new Error('user not found');
+        if (!user) throw new Error('user not found');
         return {
             status: 201,
             data: {
+                id: user._id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -71,7 +113,7 @@ const getUserInfo = async (id: ObjectId) => {
             }
         }
     }
-    catch(e: any) {
+    catch (e: any) {
         return {
             status: 401,
             data: e.message
@@ -79,9 +121,9 @@ const getUserInfo = async (id: ObjectId) => {
     }
 }
 
-
-export { 
+export {
     updateUserInfo,
     getUserInfo,
-    createUser
+    createUser,
+    Login
 };
