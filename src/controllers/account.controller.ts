@@ -10,6 +10,17 @@ const createUser = async (userDetails: {
     avaterLink?: string
 }) => {
     try {
+        const prev = await User.findOne({
+            email: userDetails.email
+        });
+        if(prev) {
+            return {
+                status: 401,
+                data: {
+                    msg: 'user already exists!'
+                }
+            }
+        }
         const user = await User.create(userDetails);
 
         return {
@@ -75,7 +86,10 @@ const Login = async (userDetails: {
     password: string
 }) => {
     try {
-        const user = await User.findOne(userDetails);
+        const user = await User.findOne({
+            email: userDetails.email,
+            password: userDetails.password
+        });
         if (!user) throw new Error('user not found');
         return {
             status: 200,
@@ -107,6 +121,7 @@ const getUserInfo = async (id: Types.ObjectId | string) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
+                purchasedCourse: user.purchasedCourse,
                 avaterLink: user.avaterLink
             }
         }
@@ -122,7 +137,9 @@ const getUserInfo = async (id: Types.ObjectId | string) => {
 const getMyBoughtCourses = async (userId: Types.ObjectId | string) => {
     try{
         const user = await User.findById(userId);
-        const courses = await Course.findById(user?.myCourses);
+        const courses = await Course.find({
+            _id: user?.purchasedCourse
+        })
         return {
             status: 200,
             data: {

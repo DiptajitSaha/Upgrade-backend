@@ -1,7 +1,7 @@
 
 import { Request, Response, Router } from "express";
-import { createCourse, getAllCourses, getCourse, getMyPublishes, publishCourse } from "../controllers/course.controller";
-import { verifyUser } from "../middlewares/user.middleware";
+import { buyCourse, createCourse, getAllCourses, getCourse, getMyPublishes, publishCourse } from "../controllers/course.controller";
+import { decodeUserid, verifyUser } from "../middlewares/user.middleware";
 import { upload } from "../middlewares/multer.middleware";
 import { uploadToCloudinary } from "../middlewares/course.middleware";
 import { getMyBoughtCourses } from "../controllers/account.controller";
@@ -11,24 +11,24 @@ export const course = Router();
 // get featured
 course.get('/browse', async (req, res) => {
     const courses = await getAllCourses();
-    res.json({
+    res.status(courses.status).json({
         data: courses.data
-    }).status(courses.status);
+    });
 });
 
 // get my purchases
 course.get('/mycourses', verifyUser, async (req: Request, res: Response) => {
     const userId = req.userId;
     if (!userId) {
-        res.json({
+        res.status(401).json({
             err: 'unauthorized user'
-        }).status(401);
+        });
         return;
     }
     const courses = await getMyBoughtCourses(userId);
-    res.json({
+    res.status(courses.status).json({
         data: courses.data
-    }).status(courses.status);
+    });
 });
 
 // get publishes
@@ -42,50 +42,67 @@ course.get('/publishes', verifyUser, async (req: Request, res: Response) => {
         return;
     }
     const courses = await getMyPublishes(userId);
-    res.json({
+    res.status(courses.status).json({
         data: courses.data
-    }).status(courses.status);
+    });
 });
 
 // publish course
-course.put('/publishes/:id', verifyUser, async (req: Request, res: Response) => {
+course.put('/publish/:id', verifyUser, async (req: Request, res: Response) => {
     const courseId = req.params.id;
     if (!req.userId) {
-        res.json({
+        res.status(401).json({
             err: 'unauthorized user'
-        }).status(401);
+        });
         return;
     }
     const course = await publishCourse(courseId, req.userId);
-    res.json({
+    res.status(course.status).json({
         data: course.data
-    }).status(course.status);
+    });
 })
+
+// buy course
+course.put('/buy/:id', verifyUser, async (req: Request, res: Response) => {
+    const courseId = req.params.id;
+    const userId = req.userId;
+
+    if (!userId) {
+        res.status(401).json({
+            err: 'unauthorized user'
+        });
+        return;
+    }
+    const course = await buyCourse(courseId, userId);
+    res.status(course.status).json({
+        data: course.data
+    });
+});
 
 // post new course
 course.post('/create', verifyUser, upload, uploadToCloudinary, async (req: Request, res: Response) => {
     const course = req.course;
-    //@ts-ignore
+    // @ts-ignore
     course?.author = req.userId;
-    console.log(course);
     
     if(!course) {
-        res.json({
+        res.status(500).json({
             err: 'upload failed',
-        }).status(500);
+        });
         return;
     }
     const uploadedCourse = await createCourse(course);
-    res.json({
+    res.status(uploadedCourse.status).json({
         data: uploadedCourse.data
-    }).status(uploadedCourse.status);
+    });
 })
 
 // get one course
-course.get('/:id', async (req, res) => {
+course.get('/:id', decodeUserid, async (req: Request, res: Response) => {
     const courseId = req.params.id;
-    const course = await getCourse(courseId);
-    res.json({
+    const userId = req.userId;
+    const course = await getCourse(courseId, (userId ? userId : null));
+    res.status(course.status).json({
         data: course.data
-    }).status(course.status);
+    });
 });

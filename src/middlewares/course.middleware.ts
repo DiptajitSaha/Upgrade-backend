@@ -6,9 +6,8 @@ interface FileObject {
 }
 
 export const uploadToCloudinary = async (req: Request, res: Response, next: NextFunction) => {
-    
     const files = req.files as FileObject;
-
+    
     if (!req.files || typeof req.files !== 'object') {
         return res.status(400).json({ error: 'No files uploaded' });
     }

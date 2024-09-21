@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyJwt } from "../util/jwt";
 
-const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
-    
+const verifyUser = (req: Request, res: Response, next: NextFunction) => {
     try {
         const authorization = req.headers.authorization;
-        
         if (!authorization) {
             throw new Error('missing authorization');
         }
@@ -17,12 +15,22 @@ const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
         next();
     }
     catch (e: any) {
-        res.json({
+        res.status(401).json({
             err: e.message
-        }).status(401);
+        });
     }
+}
+
+const decodeUserid = (req: Request, res: Response, next: NextFunction) => {
+    const authorization = req.headers.authorization;
+    if (authorization) {
+        const user = verifyJwt(authorization.split(' ')[1]);
+        req.userId = user;
+    }
+    next();
 }
 
 export {
     verifyUser,
+    decodeUserid
 }

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { createUser, getUserInfo, Login, updateUserInfo } from "../controllers/account.controller";
-import { signJwt, verifyJwt } from "../util/jwt";
+import { signJwt } from "../util/jwt";
 import { verifyUser } from "../middlewares/user.middleware";
 
 export const users = Router();
@@ -16,7 +16,7 @@ users.post('/signup', async (req: Request, res: Response) => {
         } = req.body.userDetails;
         const user = await createUser(userDetails);
         if(user.status >= 400) {
-            res.send(user.data).status(user.status);
+            res.status(user.status).send(user.data);
             return;
         }
         const token = signJwt(user.data);
@@ -28,36 +28,37 @@ users.post('/signup', async (req: Request, res: Response) => {
         }).status(200);
     }
     catch(e: any) {
-        res.json({
+        res.status(401).json({
             err: e.message
-        }).status(401);
+        });
     }
 });
 
-users.get('/login', async (req: Request, res: Response) => {
+users.post('/login', async (req: Request, res: Response) => {
     try{
         const userDetails: {
             email: string
             password: string,
-        } = req.body;
-
+        } = req.body.userDetails;
+        
         const user = await Login(userDetails);
         if(user.status >= 400){
-            res.send(user.data).status(user.status);
+            res.status(user.status).send(user.data);
             return;
         }
         const token = signJwt(user.data);
-        res.json({
+        res.status(200).json({
             msg: 'logged in successfully',
             data:{
                 token
             }
-        }).status(200);
+        });
     }
     catch(e: any) {
-        res.json({
+        console.log(e.message);
+        res.status(401).json({
             err: e.message
-        }).status(401);
+        });
     }
 });
 
@@ -66,20 +67,20 @@ users.get('/', verifyUser, async (req: Request, res: Response) => {
         if(!req.userId) throw new Error('invalid credential');
         const user = await getUserInfo(req.userId);
         if(user.status >= 400){
-            res.send(user.data).status(user.status);
+            res.status(user.status).send(user.data);
             return;
         }
-        res.json({
+        res.status(200).json({
             msg: 'user details retrived successfully',
             data: {
                 user: user.data
             }
-        }).status(200);
+        });
     }
     catch(e: any) {
-        res.json({
+        res.status(401).json({
             err: e.message
-        }).status(401);
+        });
     }
 })
 
@@ -97,7 +98,7 @@ users.put('/update', verifyUser, async (req: Request, res: Response) => {
         const user = await updateUserInfo(req.userId, update);
 
         if(user.status >= 400){
-            res.send(user.data).status(user.status);
+            res.status(user.status).send(user.data);
             return;
         }
         const token = signJwt(user.data);
@@ -109,8 +110,8 @@ users.put('/update', verifyUser, async (req: Request, res: Response) => {
         }).status(200);
     }
     catch(e: any) {
-        res.json({
+        res.status(401).json({
             err: e.message
-        }).status(401);
+        });
     }
 })

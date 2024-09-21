@@ -31,23 +31,29 @@ const createCourse = async (courseDetails: {
     }
 }
 
-const buyCourse = async (userId: Types.ObjectId | string, courseId: Types.ObjectId | string) => {
+const buyCourse = async (courseId: Types.ObjectId | string, userId: Types.ObjectId | string) => {
     try {
         const course = await Course.findById(courseId);
-        if(!course) throw new Error('Invalid courseId');
+        if(!course) throw new Error('Invalid course Id');
         const user = await User.findById(userId);
         if(!user) throw new Error('Invalid User');
-        user.myCourses.push(course._id);
+        if(!user.purchasedCourse.includes(course._id)) {
+            user.purchasedCourse.push(course._id);
+        }
+        else {
+            throw new Error('Already owned!');
+        }
+        await user.save();
         return {
             status: 200,
             data: {
-                courses: user.myCourses
+                courses: user.purchasedCourse
             }
         };
     }
     catch(e: any) {
         return {
-            status: 501,
+            status: 401,
             data: e.message
         }
     }
@@ -82,8 +88,21 @@ const publishCourse = async (CourseId: Types.ObjectId | string, userId: Types.Ob
 
 const getAllCourses = async () => {
     try{
-        const courses = await Course.find({
+        const res = await Course.find({
             published: true
+        });
+        if(!res) {
+            throw new Error('no courses found');
+        }
+        const courses = res.map(i => {
+            return {
+                _id: i._id,
+                title: i.title,
+                author: i.author,
+                price: i.price,
+                description: i.description,
+                thumbnailLink: i.thumbnailLink
+            }
         });
         return {
             status: 200,
@@ -105,7 +124,6 @@ const getMyPublishes = async (id: Types.ObjectId | string) => {
         const courses = await Course.find({
             author: id
         });
-        console.log(courses);
         return {
             status: 200,
             data: {
@@ -121,11 +139,41 @@ const getMyPublishes = async (id: Types.ObjectId | string) => {
     }
 }
 
-const getCourse = async (id: Types.ObjectId | string) => {
+
+const getCourse = async (courseId: Types.ObjectId | string, userId: Types.ObjectId | string | null) => {
     try{
-        const course = await Course.findById(id);
+        const course = await Course.findById(courseId);
         if(!course) {
             throw new Error('course not found');
+        }
+        if(userId == null) {
+            return {
+                status: 200,
+                data: {
+                    course: {
+                        _id: course._id,
+                        title: course.title,
+                        price: course.price,
+                        description: course.description,
+                        thumbnailLink: course.thumbnailLink,
+                    }
+                }
+            }
+        }
+        const user = await User.findById(userId);
+        if(!user || !user.purchasedCourse.includes(new Types.ObjectId(courseId))) {
+            return {
+                status: 200,
+                data: {
+                    course: {
+                        _id: course._id,
+                        title: course.title,
+                        price: course.price,
+                        description: course.description,
+                        thumbnailLink: course.thumbnailLink,
+                    }
+                }
+            }
         }
         return {
             status: 200,
