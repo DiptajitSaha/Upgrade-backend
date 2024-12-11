@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { CourseSchema, UserSchema } from "../model";
 
-mongoose.connect('mongodb+srv://DiptajitSaha:kazuha%402612!@test.1ouzkou.mongodb.net/Upgrade').then(
+mongoose.connect(process.env.DATABASE_URL).then(
     (res) => {
         console.log('established database connection successfully\n');
     }
